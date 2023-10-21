@@ -7,11 +7,11 @@ class CustomUserAdmin(admin.ModelAdmin):
 
 # Административный класс для модели Order
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('dish', 'cooker', 'status')
+    list_display = ('id', 'dish', 'cooker', 'status')
 
 # Административный класс для модели Dish
 class DishAdmin(admin.ModelAdmin):
-    list_display = ('title', 'description')
+    list_display = ('id', 'title', 'description')
 
 # Административный класс для модели Table
 class TableAdmin(admin.ModelAdmin):

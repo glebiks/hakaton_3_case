@@ -21,27 +21,12 @@ class GetTokenNewRoleConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         pass
 
-    @database_sync_to_async
-    def get_token_new_role(self, role):
-        user = User.objects.create()
-        user.username = user.id
-        user.save()
-        custom_user = CustomUser.objects.create(user=user, role=role)
-        token = Token.objects.create(user=user)
-        token_key = token.key
-        return token.key
+   
 
     async def receive(self, text_data):
         print("receive performed")
         data = json.loads(text_data)
-        action = data.get('action')
-        role = data.get('data')
-        if role in (1, 2) and action == 'NEW_ROLE':
-            token = await self.get_token_new_role(role)
-            await self.send(text_data=json.dumps({"action": "NEW_ROLE", "data": token}, ensure_ascii=False))
-        else:
-            await self.send(text_data=json.dumps({"action": "NEW_ROLE", "data": "Неверная роль."}, ensure_ascii=False))
-
+        
 
 """
 консюмер нейминг полученного пользователем аккаунта и аутентификация по токену
@@ -64,6 +49,16 @@ class BaseConsumer(AsyncWebsocketConsumer):
             self.user.save()
         except:
             return None
+        
+    @database_sync_to_async
+    def get_token_new_role(self, role):
+        user = User.objects.create()
+        user.username = user.id
+        user.save()
+        custom_user = CustomUser.objects.create(user=user, role=role)
+        token = Token.objects.create(user=user)
+        token_key = token.key
+        return token.key
 
     async def connect(self):
         token = self.scope['query_string'].decode('utf8').split('=')[1]
@@ -81,8 +76,18 @@ class BaseConsumer(AsyncWebsocketConsumer):
         data = json.loads(text_data)
         action = data.get('action')
 
+        # создать нового официанта/повара
+        role = data.get('data')
+        if action == 'NEW_ROLE' and role in (1, 2):
+            token = await self.get_token_new_role(role)
+            await self.send(text_data=json.dumps({"action": "NEW_ROLE", "data": token}, ensure_ascii=False))
+        else:
+            await self.send(text_data=json.dumps({"action": "NEW_ROLE", "data": "Неверная роль."}, ensure_ascii=False))
+
+        # войти новым пользователем и установить имя
         if action == 'ENTER_NAME':
             username = data.get('data')
             await self.save_user_name(self, username)
+            await self.send(text_data=json.dumps({'action': 'ENTER_NAME', 'data': 'Данные были обновлены.'}, ensure_ascii=False))
 
-        await self.send(text_data=json.dumps({'action': 'ENTER_NAME', 'data': 'Данные были обновлены.'}, ensure_ascii=False))
+        
