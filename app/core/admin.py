@@ -1,5 +1,27 @@
 from django.contrib import admin
-from.models import CustomUser
+from .models import CustomUser, Order, Table, Dish
 
-# Register your models here.
-admin.register(CustomUser)
+# Административный класс для модели CustomUser
+class CustomUserAdmin(admin.ModelAdmin):
+    list_display = ('user', 'role')
+
+# Административный класс для модели Order
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ('dish', 'cooker', 'status')
+
+# Административный класс для модели Dish
+class DishAdmin(admin.ModelAdmin):
+    list_display = ('title', 'description')
+
+# Административный класс для модели Table
+class TableAdmin(admin.ModelAdmin):
+    list_display = ('id', 'status', 'order', 'waiter')
+
+# Регистрация административных классов
+admin.site.register(CustomUser, CustomUserAdmin)
+admin.site.register(Dish, DishAdmin)
+admin.site.register(Order, OrderAdmin)
+admin.site.register(Table, TableAdmin)
+
+
+

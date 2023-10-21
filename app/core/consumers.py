@@ -36,11 +36,11 @@ class GetTokenNewRoleConsumer(AsyncWebsocketConsumer):
         data = json.loads(text_data)
         action = data.get('action')
         role = data.get('data')
-        if role in (1, 2) and action == 'new_role':
+        if role in (1, 2) and action == 'NEW_ROLE':
             token = await self.get_token_new_role(role)
-            await self.send(text_data=json.dumps({"action": "new_role", "data": token}, ensure_ascii=False))
+            await self.send(text_data=json.dumps({"action": "NEW_ROLE", "data": token}, ensure_ascii=False))
         else:
-            await self.send(text_data=json.dumps({"action": "new_role", "data": "Неверная роль"}, ensure_ascii=False))
+            await self.send(text_data=json.dumps({"action": "NEW_ROLE", "data": "Неверная роль."}, ensure_ascii=False))
 
 
 """
@@ -81,8 +81,8 @@ class BaseConsumer(AsyncWebsocketConsumer):
         data = json.loads(text_data)
         action = data.get('action')
 
-        if action == 'enter_name':
+        if action == 'ENTER_NAME':
             username = data.get('data')
             await self.save_user_name(self, username)
 
-        await self.send(text_data=json.dumps({'message': 'Данные пользователя обновлены'}, ensure_ascii=False))
+        await self.send(text_data=json.dumps({'action': 'ENTER_NAME', 'data': 'Данные были обновлены.'}, ensure_ascii=False))
