@@ -10,27 +10,6 @@ from rest_framework import status
 from rest_framework.response import Response
 
 
-""" 
-консюмер для адмнистратора, выдает токен, 
-по которому в систему сможет войти пользователь 
-"""
-class GetTokenNewRoleConsumer(AsyncWebsocketConsumer):
-    async def connect(self):
-        await self.accept()
-
-    async def disconnect(self, close_code):
-        pass
-
-   
-
-    async def receive(self, text_data):
-        print("receive performed")
-        data = json.loads(text_data)
-        
-
-"""
-консюмер нейминг полученного пользователем аккаунта и аутентификация по токену
-"""
 class BaseConsumer(AsyncWebsocketConsumer):
 
     user = None
@@ -41,7 +20,7 @@ class BaseConsumer(AsyncWebsocketConsumer):
             return Token.objects.get(key=token).user
         except Token.DoesNotExist:
             return None
-        
+
     @database_sync_to_async
     def save_user_name(self, scope, username):
         try:
@@ -49,7 +28,7 @@ class BaseConsumer(AsyncWebsocketConsumer):
             self.user.save()
         except:
             return None
-        
+
     @database_sync_to_async
     def get_token_new_role(self, role):
         user = User.objects.create()
@@ -89,5 +68,3 @@ class BaseConsumer(AsyncWebsocketConsumer):
             username = data.get('data')
             await self.save_user_name(self, username)
             await self.send(text_data=json.dumps({'action': 'ENTER_NAME', 'data': 'Данные были обновлены.'}, ensure_ascii=False))
-
-        

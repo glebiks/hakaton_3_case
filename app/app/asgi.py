@@ -2,7 +2,7 @@
 from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
 from django.urls import path
-from core.consumers import BaseConsumer, GetTokenNewRoleConsumer
+from core.consumers import BaseConsumer
 
 import os
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'app.settings')
