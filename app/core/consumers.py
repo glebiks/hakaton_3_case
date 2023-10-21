@@ -10,24 +10,10 @@ from rest_framework import status
 from rest_framework.response import Response
 
 
-class WebSocketTokenAuthMiddleware(BaseMiddleware):
-    async def __call__(self, scope, receive, send):
-        close_old_connections()
-        scope["user"] = await self.get_user_from_token(scope)
-        return await super().__call__(scope, receive, send)
-
-    @database_sync_to_async
-    def get_user_from_token(self, scope):
-        try:
-            token = scope.get("headers").get(b"authorization").decode("utf-8")
-            # Получить токен из заголовка "Authorization"
-            token = token.split(" ")[1]
-            user = Token.objects.get(key=token).user
-            return user
-        except (Token.DoesNotExist, IndexError, AttributeError):
-            return None
-
-
+""" 
+консюмер для адмнистратора, выдает токен, 
+по которому в систему сможет войти пользователь 
+"""
 class GetTokenNewRoleConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         await self.accept()
@@ -45,7 +31,6 @@ class GetTokenNewRoleConsumer(AsyncWebsocketConsumer):
         token_key = token.key
         return token.key
 
-
     async def receive(self, text_data):
         print("receive performed")
         data = json.loads(text_data)
@@ -58,10 +43,32 @@ class GetTokenNewRoleConsumer(AsyncWebsocketConsumer):
             await self.send(text_data=json.dumps({"action": "new_role", "data": "Неверная роль"}, ensure_ascii=False))
 
 
+"""
+консюмер нейминг полученного пользователем аккаунта и аутентификация по токену
+"""
 class BaseConsumer(AsyncWebsocketConsumer):
+
+    user = None
+
+    @database_sync_to_async
+    def get_user_from_token(self, token):
+        try:
+            return Token.objects.get(key=token).user
+        except Token.DoesNotExist:
+            return None
+        
+    @database_sync_to_async
+    def save_user_name(self, scope, username):
+        try:
+            self.user.username = username
+            self.user.save()
+        except:
+            return None
+
     async def connect(self):
-        user = self.scope["user"]
-        if user:
+        token = self.scope['query_string'].decode('utf8').split('=')[1]
+        self.user = await self.get_user_from_token(token)
+        if self.user:
             await self.accept()
         else:
             await self.close()
@@ -74,16 +81,8 @@ class BaseConsumer(AsyncWebsocketConsumer):
         data = json.loads(text_data)
         action = data.get('action')
 
-        if action == 'enter_user_data':
-            # Здесь вы можете обработать ввод данных пользователя и записать их в базу данных
-            # Например, вам понадобится извлечь пользователя на основе переданного токена
-            user = self.scope['user']
+        if action == 'enter_name':
+            username = data.get('data')
+            await self.save_user_name(self, username)
 
-            # Здесь обрабатывайте ввод данных, например:
-            username = data.get('username')
-            # Сохраните имя пользователя в базу данных
-            user.username = username
-            user.save()
-
-        # Отправьте подтверждение клиенту
         await self.send(text_data=json.dumps({'message': 'Данные пользователя обновлены'}, ensure_ascii=False))
