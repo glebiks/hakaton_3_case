@@ -2,7 +2,7 @@
 from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
 from django.urls import path
-from core.consumers import BaseConsumer
+from core.consumers import BaseConsumer, GetTokenNewRoleConsumer
 
 import os
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'app.settings')
@@ -15,7 +15,8 @@ application = ProtocolTypeRouter({
     "http": django_asgi_app,
     "websocket": AuthMiddlewareStack(
         URLRouter([
-            path('ws', BaseConsumer.as_asgi()),
+            path('ws_new_role/', GetTokenNewRoleConsumer.as_asgi()), # { "role": "cooker" }
+            path('ws_connect/', BaseConsumer.as_asgi()), # Auth Bearer b14asj4r2od... { "name": "Bob" }
         ])
     )
 })

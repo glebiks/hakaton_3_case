@@ -6,6 +6,5 @@ celery
 ruff
 mypy
 pysnooper
-djangorestframework-simplejwt
 channels
 daphne
