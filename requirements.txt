@@ -1,0 +1,11 @@
+Django==4.1
+djangorestframework==3.14
+psycopg2-binary==2.9.9
+redis
+celery
+ruff
+mypy
+pysnooper
+djangorestframework-simplejwt
+channels
+daphne
