@@ -111,7 +111,7 @@ class BaseConsumer(AsyncWebsocketConsumer):
         data = await self.get_custom_user_role()
         if self.user:
             await self.accept()
-            await self.send(text_data=json.dumps({"data": data}))
+            await self.send(text_data=json.dumps({"action": "GET_ROLE", "data": data}))
         else:
             await self.close()
 
@@ -133,13 +133,13 @@ class BaseConsumer(AsyncWebsocketConsumer):
         role = data.get('data')
         if action == 'NEW_ROLE' and role in (1, 2):
             token, new_user = await self.get_token_new_role(role)
-            await self.send(text_data=json.dumps({"action": "NEW_ROLE",
+            await self.send(text_data=json.dumps({"action": "NEW_ROLE_RESPONSE",
                                                   "data": {
                                                       "token": token,
                                                       "role": new_user.role},
                                                   }, ensure_ascii=False))
         elif action == 'NEW_ROLE' and role not in (1, 2):
-            await self.send(text_data=json.dumps({"action": "NEW_ROLE", "data": "Неверная роль."}, ensure_ascii=False))
+            await self.send(text_data=json.dumps({"action": "NEW_ROLE_RESPONSE", "data": "Неверная роль."}, ensure_ascii=False))
 
         # войти новым пользователем и установить имя
         """
@@ -151,7 +151,7 @@ class BaseConsumer(AsyncWebsocketConsumer):
         if action == 'ENTER_NAME':
             username = data.get('data')
             await self.save_user_name(self, username)
-            await self.send(text_data=json.dumps({'action': 'ENTER_NAME', 'data': 'Данные были обновлены.'}, ensure_ascii=False))
+            await self.send(text_data=json.dumps({'action': 'ENTER_NAME_RESPONSE', 'data': 'Данные были обновлены.'}, ensure_ascii=False))
 
         # управлять столиком, если ты официант
         """
@@ -168,7 +168,7 @@ class BaseConsumer(AsyncWebsocketConsumer):
             table_id = data["table_id"]
             table_status = data["table_status"]
             await self.perform_data_for_table(table_id, table_status)
-            await self.send(text_data=json.dumps({"action": "MANAGE_TABLE", "data": "Статус столика был изменен."}, ensure_ascii=False))
+            await self.send(text_data=json.dumps({"action": "MANAGE_TABLE_RESPONSE", "data": "Статус столика был изменен."}, ensure_ascii=False))
 
         # взять на себя обслуживание столика
         """
@@ -179,7 +179,7 @@ class BaseConsumer(AsyncWebsocketConsumer):
         """
         if action == "I_SERVE":
             await self.perform_i_serve(data.get("data"))
-            await self.send(text_data=json.dumps({"action": "I_SERVE", "data": "Официант взял столик."}, ensure_ascii=False))
+            await self.send(text_data=json.dumps({"action": "I_SERVE_RESPONSE", "data": "Официант взял столик."}, ensure_ascii=False))
 
         # просмотреть все меню
         """
@@ -189,7 +189,7 @@ class BaseConsumer(AsyncWebsocketConsumer):
         """
         if action == "SHOW_MENU":
             temp_data = await self.form_menu_data()
-            await self.send(text_data=json.dumps({"action": "SHOW_MENU", "data": temp_data}, ensure_ascii=False))
+            await self.send(text_data=json.dumps({"action": "SHOW_MENU_RESPONSE", "data": temp_data}, ensure_ascii=False))
 
         # просмотреть все столики
         """
@@ -199,7 +199,7 @@ class BaseConsumer(AsyncWebsocketConsumer):
         """
         if action == "SHOW_TABLES":
             temp_data = await self.form_tables_data()
-            await self.send(text_data=json.dumps({"action": "SHOW_TABLES", "data": temp_data}, ensure_ascii=False))
+            await self.send(text_data=json.dumps({"action": "SHOW_TABLES_RESPONSE", "data": temp_data}, ensure_ascii=False))
 
         # сделать заказ
         """
@@ -220,7 +220,7 @@ class BaseConsumer(AsyncWebsocketConsumer):
             table_id = data.get("data")["table_id"]
             orders_from_request = data.get("data")["order"]
             await self.perform_data_for_order(table_id, orders_from_request)
-            await self.send(text_data=json.dumps({"action": "MAKE_ORDER", "data": "Заказ создан."}, ensure_ascii=False))
+            await self.send(text_data=json.dumps({"action": "MAKE_ORDER_RESPONSE", "data": "Заказ создан."}, ensure_ascii=False))
 
         # получить список всех пользователей, если ты администратор
         """
@@ -230,7 +230,7 @@ class BaseConsumer(AsyncWebsocketConsumer):
         """
         if action == "GET_USERS":
             temp_data = await self.get_users_data()
-            await self.send(text_data=json.dumps({"action": "GET_USERS", "data": temp_data}, ensure_ascii=False))
+            await self.send(text_data=json.dumps({"action": "GET_USERS_RESPONSE", "data": temp_data}, ensure_ascii=False))
 
         # получить данные о готовке и блюдах в заказе
         """
@@ -242,7 +242,7 @@ class BaseConsumer(AsyncWebsocketConsumer):
         if action == "ORDER_INFO":
             order_id = data.get("data")
             temp_data = await self.get_order_info(order_id)
-            await self.send(text_data=json.dumps({"action": "ORDER_INFO", "data": temp_data}, ensure_ascii=False))
+            await self.send(text_data=json.dumps({"action": "ORDER_INFO_RESPONSE", "data": temp_data}, ensure_ascii=False))
 
         # изменить статус готовки блюда
         """

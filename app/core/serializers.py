@@ -23,7 +23,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
 class DishSerializer(serializers.ModelSerializer):
     class Meta:
         model = Dish
-        fields = ("title", "description", "link_to_photo")
+        fields = ("id", "title", "description", "link_to_photo")
 
 class DishInOrderSerializer(serializers.ModelSerializer):
     dish_title = serializers.SerializerMethodField()
