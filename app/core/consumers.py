@@ -16,12 +16,20 @@ from django.core import serializers
 class BaseConsumer(AsyncWebsocketConsumer):
 
     user = None
+    custom_user = None
 
     @database_sync_to_async
     def get_user_from_token(self, token):
         try:
             return Token.objects.get(key=token).user
         except Token.DoesNotExist:
+            return None
+
+    @database_sync_to_async 
+    def get_custom_user_from_user(self, user):
+        try:
+            return CustomUser.objects.get(user=user.id)
+        except CustomUser.DoesNotExist:
             return None
 
     @database_sync_to_async
@@ -96,22 +104,13 @@ class BaseConsumer(AsyncWebsocketConsumer):
         json_data = serializer.data
         return json_data
 
-    @sync_to_async
-    def get_custom_user_role(self):
-        try:
-            temp_data = CustomUser.objects.get(user=self.user).role
-            data = serializers.serialize('json', temp_data)
-            return data
-        except:
-            return None
-
     async def connect(self):
         token = self.scope['query_string'].decode('utf8').split('=')[1]
         self.user = await self.get_user_from_token(token)
-        data = await self.get_custom_user_role()
+        self.custom_user = await self.get_custom_user_from_user(self.user)
         if self.user:
             await self.accept()
-            await self.send(text_data=json.dumps({"action": "GET_ROLE", "data": data}))
+            await self.send(text_data=json.dumps({"action": "GET_ROLE_RESPONSE", "data": self.custom_user.role}))
         else:
             await self.close()
 
