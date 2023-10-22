@@ -54,6 +54,9 @@ class BaseConsumer(AsyncWebsocketConsumer):
     def perform_data_for_table(self, table_id, table_status):
         table = Table.objects.get(id=table_id)
         table.status = table_status
+        if table_status == 1:
+            table.waiter = None
+            table.order = None
         table.save()
 
     @database_sync_to_async
@@ -96,6 +99,7 @@ class BaseConsumer(AsyncWebsocketConsumer):
         serializer = TableSerializer(data, many=True)
         json_data = serializer.data
         return json_data
+
 
     @sync_to_async
     def get_users_data(self):

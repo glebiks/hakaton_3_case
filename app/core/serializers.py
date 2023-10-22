@@ -5,14 +5,17 @@ from .models import CustomUser, Dish, DishInOrder, Table
 
 
 class TableSerializer(serializers.ModelSerializer):
-    waiter_name = serializers.SerializerMethodField()
+    waiter_name = serializers.SerializerMethodField(required=False)
 
     class Meta:
         model = Table
         fields = ('id', 'status', 'order', 'waiter', 'waiter_name')
 
     def get_waiter_name(self, obj):
-        return obj.waiter.username
+        if obj.waiter:
+            return obj.waiter.username
+        return None
+
 
 class CustomUserSerializer(serializers.ModelSerializer):
     user_name = serializers.SerializerMethodField()
