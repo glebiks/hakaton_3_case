@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import CustomUser, Order, Table, Dish
+from .models import CustomUser, Order, Table, Dish, DishInOrder
 
 # Административный класс для модели CustomUser
 class CustomUserAdmin(admin.ModelAdmin):
@@ -7,11 +7,15 @@ class CustomUserAdmin(admin.ModelAdmin):
 
 # Административный класс для модели Order
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('id', 'dish', 'cooker', 'status')
+    list_display = ('id',)
 
 # Административный класс для модели Dish
 class DishAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'description')
+    list_display = ('id', 'title', 'description', 'link_to_photo', 'cooker')
+
+# Административный класс для модели DishInOrder
+class DishInOrderAdmin(admin.ModelAdmin):
+    list_display = ('id', 'dish', 'to_order', 'status')
 
 # Административный класс для модели Table
 class TableAdmin(admin.ModelAdmin):
@@ -20,6 +24,7 @@ class TableAdmin(admin.ModelAdmin):
 # Регистрация административных классов
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(Dish, DishAdmin)
+admin.site.register(DishInOrder, DishInOrderAdmin)
 admin.site.register(Order, OrderAdmin)
 admin.site.register(Table, TableAdmin)
 
