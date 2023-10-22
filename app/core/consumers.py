@@ -48,7 +48,7 @@ class BaseConsumer(AsyncWebsocketConsumer):
         custom_user = CustomUser.objects.create(user=user, role=role)
         token = Token.objects.create(user=user)
         token_key = token.key
-        return token.key, user
+        return token.key
 
     @database_sync_to_async
     def perform_data_for_table(self, table_id, table_status):
@@ -135,15 +135,9 @@ class BaseConsumer(AsyncWebsocketConsumer):
         """
         role = data.get('data')
         if action == 'NEW_ROLE' and role in (1, 2):
-            token, new_user = await self.get_token_new_role(role)
-            await self.send(text_data=json.dumps({"action": "NEW_ROLE_RESPONSE",
-                                                  "data": {
-                                                      "token": token,
-                                                      "role": new_user.role},
-                                                  }, ensure_ascii=False))
-        elif action == 'NEW_ROLE' and role not in (1, 2):
-            await self.send(text_data=json.dumps({"action": "NEW_ROLE_RESPONSE", "data": "Неверная роль."}, ensure_ascii=False))
-
+            token = await self.get_token_new_role(role)
+            await self.send(text_data=json.dumps({"action": "NEW_ROLE_RESPONSE", "data": token}, ensure_ascii=False))
+    
         # войти новым пользователем и установить имя
         """
             {
