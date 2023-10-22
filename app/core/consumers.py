@@ -9,7 +9,7 @@ import json
 from .models import CustomUser, Table, Order, DishInOrder, Dish
 from rest_framework import status
 from rest_framework.response import Response
-from .serializers import CustomUserSerializer, DishSerializer, DishInOrderSerializer
+from .serializers import CustomUserSerializer, DishSerializer, DishInOrderSerializer, TableSerializer
 from django.core import serializers
 
 
@@ -40,7 +40,7 @@ class BaseConsumer(AsyncWebsocketConsumer):
         custom_user = CustomUser.objects.create(user=user, role=role)
         token = Token.objects.create(user=user)
         token_key = token.key
-        return token.key
+        return token.key, user
 
     @database_sync_to_async
     def perform_data_for_table(self, table_id, table_status):
@@ -83,17 +83,35 @@ class BaseConsumer(AsyncWebsocketConsumer):
         return json_data
 
     @sync_to_async
+    def form_tables_data(self):
+        data = Table.objects.all()
+        serializer = TableSerializer(data, many=True)
+        json_data = serializer.data
+        return json_data
+
+    @sync_to_async
     def get_users_data(self):
         data = CustomUser.objects.all()
         serializer = CustomUserSerializer(data, many=True)
         json_data = serializer.data
         return json_data
 
+    @sync_to_async
+    def get_custom_user_role(self):
+        try:
+            temp_data = CustomUser.objects.get(user=self.user).role
+            data = serializers.serialize('json', temp_data)
+            return data
+        except:
+            return None
+
     async def connect(self):
         token = self.scope['query_string'].decode('utf8').split('=')[1]
         self.user = await self.get_user_from_token(token)
+        data = await self.get_custom_user_role()
         if self.user:
             await self.accept()
+            await self.send(text_data=json.dumps({"data": data}))
         else:
             await self.close()
 
@@ -114,11 +132,11 @@ class BaseConsumer(AsyncWebsocketConsumer):
         """
         role = data.get('data')
         if action == 'NEW_ROLE' and role in (1, 2):
-            token = await self.get_token_new_role(role)
+            token, new_user = await self.get_token_new_role(role)
             await self.send(text_data=json.dumps({"action": "NEW_ROLE",
                                                   "data": {
                                                       "token": token,
-                                                      "role": CustomUser.objects.get(user=self.user).role},
+                                                      "role": new_user.role},
                                                   }, ensure_ascii=False))
         elif action == 'NEW_ROLE' and role not in (1, 2):
             await self.send(text_data=json.dumps({"action": "NEW_ROLE", "data": "Неверная роль."}, ensure_ascii=False))
@@ -173,6 +191,16 @@ class BaseConsumer(AsyncWebsocketConsumer):
             temp_data = await self.form_menu_data()
             await self.send(text_data=json.dumps({"action": "SHOW_MENU", "data": temp_data}, ensure_ascii=False))
 
+        # просмотреть все столики
+        """
+        {
+            "action": "SHOW_TABLES"
+        }
+        """
+        if action == "SHOW_TABLES":
+            temp_data = await self.form_tables_data()
+            await self.send(text_data=json.dumps({"action": "SHOW_TABLES", "data": temp_data}, ensure_ascii=False))
+
         # сделать заказ
         """
         {
@@ -224,11 +252,21 @@ class BaseConsumer(AsyncWebsocketConsumer):
                 "table_id": 4,
                 "order": [
                     {
-                        1
+                        "dish_in_order_id": 11
+                        "new_status": 2
                     },
-                    1,
-                    2,
-                    3
+                    {
+                        "dish_in_order_id": 12
+                        "new_status": 3
+                    },
+                    {
+                        "dish_in_order_id": 13
+                        "new_status": 3
+                    },
+                    {
+                        "dish_in_order_id": 14
+                        "new_status": 4
+                    }
                 ]
             }
         }

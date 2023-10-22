@@ -1,7 +1,13 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import CustomUser, Dish, DishInOrder
+from .models import CustomUser, Dish, DishInOrder, Table
 
+
+
+class TableSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Table
+        fields = ('id', 'status', 'order', 'waiter')
 
 class CustomUserSerializer(serializers.ModelSerializer):
     user_name = serializers.SerializerMethodField()
