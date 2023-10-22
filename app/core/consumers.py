@@ -9,7 +9,7 @@ import json
 from .models import CustomUser, Table, Order, DishInOrder, Dish
 from rest_framework import status
 from rest_framework.response import Response
-from .serializers import DishSerializer
+from .serializers import CustomUserSerializer, DishSerializer
 from django.core import serializers
 
 
@@ -69,9 +69,17 @@ class BaseConsumer(AsyncWebsocketConsumer):
 
     @sync_to_async
     def form_menu_data(self):
-        temp_data = Dish.objects.all()
-        qs_json = serializers.serialize('json', temp_data)
-        return qs_json
+        data = Dish.objects.all()
+        serializer = DishSerializer(data, many=True)
+        json_data = serializer.data
+        return json_data
+    
+    @sync_to_async
+    def get_users_data(self):
+        data = CustomUser.objects.all()
+        serializer = CustomUserSerializer(data, many=True)
+        json_data = serializer.data
+        return json_data
 
     async def connect(self):
         token = self.scope['query_string'].decode('utf8').split('=')[1]
@@ -178,6 +186,34 @@ class BaseConsumer(AsyncWebsocketConsumer):
             await self.perform_data_for_order(table_id, orders_from_request)
             await self.send(text_data=json.dumps({"action": "MAKE_ORDER", "data": "Заказ создан."}, ensure_ascii=False))
 
+        # получить список всех пользователей, если ты администратор
+        """
+        {
+            "action": "GET_USERS"
+        }
+        """
+        if action == "GET_USERS":
+            temp_data = await self.get_users_data()
+            await self.send(text_data=json.dumps({"action": "GET_USERS", "data": temp_data}, ensure_ascii=False))
+
+
+        # изменить статус готовки блюда
+        """
+        {
+            "action": "UPDATE_ORDER",
+            "data": {
+                "table_id": 4,
+                "order": [
+                    {
+                        1
+                    },
+                    1,
+                    2,
+                    3
+                ]
+            }
+        }
+        """
 
         """
             "table_order": [

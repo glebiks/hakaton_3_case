@@ -6,6 +6,8 @@ class CustomUser(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     role = models.IntegerField(
         verbose_name='Role', choices=((1, 'cooker'), (2, 'waiter')))
+    rate_count = models.IntegerField(default=0)
+    rate_sum = models.IntegerField(default=0)
 
     def __str__(self):
         return self.user.username

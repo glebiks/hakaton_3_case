@@ -3,7 +3,7 @@ from .models import CustomUser, Order, Table, Dish, DishInOrder
 
 # Административный класс для модели CustomUser
 class CustomUserAdmin(admin.ModelAdmin):
-    list_display = ('user', 'role')
+    list_display = ('user', 'role', 'rate_count', 'rate_sum')
 
 # Административный класс для модели Order
 class OrderAdmin(admin.ModelAdmin):
