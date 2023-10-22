@@ -167,7 +167,7 @@ class BaseConsumer(AsyncWebsocketConsumer):
             table_id = data["table_id"]
             table_status = data["table_status"]
             await self.perform_data_for_table(table_id, table_status)
-            await self.send(text_data=json.dumps({"action": "MANAGE_TABLE_RESPONSE", "data": "Статус столика был изменен."}, ensure_ascii=False))
+
 
         # взять на себя обслуживание столика
         """
@@ -251,40 +251,26 @@ class BaseConsumer(AsyncWebsocketConsumer):
                 "table_id": 4,
                 "order": [
                     {
-                        "dish_in_order_id": 11
+                        "dish_in_order_id": 7
                         "new_status": 2
                     },
                     {
-                        "dish_in_order_id": 12
+                        "dish_in_order_id": 8
                         "new_status": 3
                     },
                     {
-                        "dish_in_order_id": 13
+                        "dish_in_order_id": 9
                         "new_status": 3
                     },
                     {
-                        "dish_in_order_id": 14
+                        "dish_in_order_id": 10
                         "new_status": 4
                     }
                 ]
             }
         }
         """
-
-        """
-            "table_order": [
-                {
-                    "dish_id": 1,
-                    "dish_status": 2,
-                },
-                {
-                    "dish_in_order_id": 2,
-                    "dish_status": 3,
-                },
-                {
-                    "dish_in_order_id": 3,
-                    "dish_status": 2,
-                },
-            ]
-            table_order = data["table_order"]
-        """
+        if action == "UPDATE_ORDER":
+            temp_data = data.get("data")
+            table_id = temp_data["table_id"]
+            order_from_request = temp_data["order"]
