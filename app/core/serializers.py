@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import CustomUser, Dish
+from .models import CustomUser, Dish, DishInOrder
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
@@ -18,3 +18,13 @@ class DishSerializer(serializers.ModelSerializer):
     class Meta:
         model = Dish
         fields = ("title", "description", "link_to_photo")
+
+class DishInOrderSerializer(serializers.ModelSerializer):
+    dish_title = serializers.SerializerMethodField()
+
+    class Meta:
+        model = DishInOrder
+        fields = ("id", "dish_title", "status", "to_order")
+
+    def get_dish_title(self, obj):
+        return obj.dish.title

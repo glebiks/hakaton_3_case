@@ -9,7 +9,7 @@ import json
 from .models import CustomUser, Table, Order, DishInOrder, Dish
 from rest_framework import status
 from rest_framework.response import Response
-from .serializers import CustomUserSerializer, DishSerializer
+from .serializers import CustomUserSerializer, DishSerializer, DishInOrderSerializer
 from django.core import serializers
 
 
@@ -61,7 +61,15 @@ class BaseConsumer(AsyncWebsocketConsumer):
         table.order = order
         table.save()
         for dish_id in orders_from_request:
-            DishInOrder.objects.create(to_order=order, dish=Dish.objects.get(id=dish_id))
+            DishInOrder.objects.create(
+                to_order=order, dish=Dish.objects.get(id=dish_id))
+
+    @database_sync_to_async
+    def get_order_info(self, order_id):
+        data = DishInOrder.objects.filter(to_order=order_id)
+        serializer = DishInOrderSerializer(data, many=True)
+        json_data = serializer.data
+        return json_data
 
     @sync_to_async
     def async_print(self, message):
@@ -73,7 +81,7 @@ class BaseConsumer(AsyncWebsocketConsumer):
         serializer = DishSerializer(data, many=True)
         json_data = serializer.data
         return json_data
-    
+
     @sync_to_async
     def get_users_data(self):
         data = CustomUser.objects.all()
@@ -109,8 +117,8 @@ class BaseConsumer(AsyncWebsocketConsumer):
             token = await self.get_token_new_role(role)
             await self.send(text_data=json.dumps({"action": "NEW_ROLE",
                                                   "data": {
-                                                        "token": token,
-                                                        "role": CustomUser.objects.get(user=self.user).role},
+                                                      "token": token,
+                                                      "role": CustomUser.objects.get(user=self.user).role},
                                                   }, ensure_ascii=False))
         elif action == 'NEW_ROLE' and role not in (1, 2):
             await self.send(text_data=json.dumps({"action": "NEW_ROLE", "data": "Неверная роль."}, ensure_ascii=False))
@@ -196,6 +204,17 @@ class BaseConsumer(AsyncWebsocketConsumer):
             temp_data = await self.get_users_data()
             await self.send(text_data=json.dumps({"action": "GET_USERS", "data": temp_data}, ensure_ascii=False))
 
+        # получить данные о готовке и блюдах в заказе
+        """
+        {
+            "action": "ORDER_INFO",
+            "data": 4
+        }
+        """
+        if action == "ORDER_INFO":
+            order_id = data.get("data")
+            temp_data = await self.get_order_info(order_id)
+            await self.send(text_data=json.dumps({"action": "ORDER_INFO", "data": temp_data}, ensure_ascii=False))
 
         # изменить статус готовки блюда
         """
