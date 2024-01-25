@@ -2,7 +2,7 @@
 fix=true
 line-length=120
 select=["ALL"]
-ignore=["D1","D203","D213","FA102","I","ANN001"]
+ignore=["D1","D203","D213","FA102","I","ANN001", "Q000"]
 
 extend-select = ["C4", "SIM", "TCH"]
 show-fixes = true

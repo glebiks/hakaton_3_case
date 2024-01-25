@@ -25,7 +25,7 @@ class BaseConsumer(AsyncWebsocketConsumer):
         except Token.DoesNotExist:
             return None
 
-    @database_sync_to_async 
+    @database_sync_to_async
     def get_custom_user_from_user(self, user):
         try:
             return CustomUser.objects.get(user=user.id)
@@ -100,7 +100,6 @@ class BaseConsumer(AsyncWebsocketConsumer):
         json_data = serializer.data
         return json_data
 
-
     @sync_to_async
     def get_users_data(self):
         data = CustomUser.objects.all()
@@ -137,7 +136,7 @@ class BaseConsumer(AsyncWebsocketConsumer):
         if action == 'NEW_ROLE' and role in (1, 2):
             token = await self.get_token_new_role(role)
             await self.send(text_data=json.dumps({"action": "NEW_ROLE_RESPONSE", "data": token}, ensure_ascii=False))
-    
+
         # войти новым пользователем и установить имя
         """
             {
@@ -165,7 +164,6 @@ class BaseConsumer(AsyncWebsocketConsumer):
             table_id = data["table_id"]
             table_status = data["table_status"]
             await self.perform_data_for_table(table_id, table_status)
-
 
         # взять на себя обслуживание столика
         """

@@ -3,7 +3,6 @@ from django.contrib.auth.models import User
 from .models import CustomUser, Dish, DishInOrder, Table
 
 
-
 class TableSerializer(serializers.ModelSerializer):
     waiter_name = serializers.SerializerMethodField(required=False)
 
@@ -32,6 +31,7 @@ class DishSerializer(serializers.ModelSerializer):
     class Meta:
         model = Dish
         fields = ("id", "title", "description", "link_to_photo")
+
 
 class DishInOrderSerializer(serializers.ModelSerializer):
     dish_title = serializers.SerializerMethodField()

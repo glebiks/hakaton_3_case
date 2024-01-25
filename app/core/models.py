@@ -37,12 +37,13 @@ class DishInOrder(models.Model):
         (3, "Готово"),
         (4, "Выдано"),
     )
-    status = models.IntegerField(verbose_name="status", choices=STATUSES, default=1)
+    status = models.IntegerField(
+        verbose_name="status", choices=STATUSES, default=1)
     to_order = models.ForeignKey(Order, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.dish.title
-    
+
 
 class Table(models.Model):
     STATUSES = (
@@ -54,8 +55,10 @@ class Table(models.Model):
         (6, "Свободен (ожидает уборки)"),
     )
     status = models.IntegerField(verbose_name="table_status", choices=STATUSES)
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True, blank=True)
-    waiter = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    order = models.ForeignKey(
+        Order, on_delete=models.CASCADE, null=True, blank=True)
+    waiter = models.ForeignKey(
+        User, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return str(self.id)
